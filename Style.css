@@ -1,0 +1,43 @@
+h1 {
+    text-align: center;
+}
+
+/* input{
+    display: block;
+    margin: auto;
+} */
+
+div{
+    margin: auto;
+    display: table;
+    border: 1px solid black;
+}
+
+#outputDiv{
+    margin: auto;
+    line-height: 30px;
+    min-height: 70vh;
+    width: 30%;
+    display: table;
+    border: 1px solid black;
+}
+
+.do button {
+    float: right; /* Float the button to the right */
+    margin-left: 1px; /* Add some margin for better spacing */
+}
+
+.done{
+    text-decoration: line-through;
+}
+
+#clearAll{
+    margin: auto;
+    width: 30%;
+    display: table;
+}
+
+#clearAllBtn{
+    width: 100%;
+    display: table;
+}
