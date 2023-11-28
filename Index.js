@@ -1,66 +1,22 @@
-var allInputData = []; // declared array for storing inputs
-
-let clearAllButton = document.getElementById("clearAllBtn"); // getting Clear All Button
+var allInputData = []; // Array for storing inputs
+clearAllButton = document.getElementById("clearAllBtn"); // Clear all button
+let timeOut; 
+let crossButton;
 
 listener();
 
-clearAllButton.addEventListener("click", function(){ // event Listner for clear all button
+// Event Listner for clear all button    
+clearAllButton.addEventListener("click", function(){
     if(allInputData[0] !== undefined){
         undoDept(this); // undo department
     }else{
-        alert("It's already CLEARRR !"); // if array is empty
+        alert("It's already CLEARRR !"); // If array is empty
     }
 })
 
+// FUNCTIONS
 
-//FUNCTIONS
-function addData(){
-    var singleInputData = document.getElementById("inputData").value.trim(); // get value from input
-    if(singleInputData !==''){
-        allInputData.push(singleInputData); // push in array
-        document.getElementById("inputData").value=''; // reset value of input
-        displayData();
-    }
-}
-
-
-function displayData(){
-    var list = document.getElementById("dataDisplay"); // get list
-    var listItem = document.createElement("li"); // create new list item
-    // listItem.textContent = allInputData[allInputData.length-1]; // add content (removed for adding ID and buttons)
-    addListItem(list,listItem); 
-}
-
-
-function addListItem(list,listItem){
-    //add data to li, add edit button & add Cross Button with id to it.
-    listItem.innerHTML=(allInputData[allInputData.length-1]+"<button id = 'crossBtn"+allInputData.length+"'>X</button><button id = 'editBtn"+allInputData.length+"'>edit</button>");
-    listItem.id = allInputData.length; //add id
-    listItem.className = "do"; // add class
-
-    // add Click Listener to list items
-    listItem.addEventListener("click", function(){
-        this.classList.toggle("done"); // toggle class added for line through
-    });
-    
-    // add new element to list
-    list.appendChild(listItem);
-
-    // Event Listener on Cross Button
-    document.getElementById("crossBtn"+allInputData.length).addEventListener("click", function(event){
-        deleteListItem(this);
-        event.stopPropagation(); // event will not work for parent's click
-    });
-
-    // Event Listener on edit button
-    document.getElementById("editBtn"+allInputData.length).addEventListener("click", function(event){
-        editListItem(this);
-        event.stopPropagation();
-    });
-
-}
-
-
+// ADD Button / Press ENTER
 function listener(){
     // click on add button, call function addData
     document.getElementById("addButton").addEventListener("click", function(){
@@ -85,81 +41,116 @@ function listener(){
     });
 }
 
-
-function listenerLineThrough(){
-    // add event Listeners again to undo data
-    let deletedSoIncrease = 1;
-
-    for(let i=0; i< document.getElementsByClassName("do").length; i++){
-        document.getElementsByClassName("do")[i].addEventListener("click", function(event){
-            this.classList.toggle("done"); // adding toggle class
-            // event.stopPropagation();
-        });
-
-        // if for handling deleted list items
-        if (document.getElementById("crossBtn"+(i+deletedSoIncrease))){
-            //edit button
-            document.getElementById("editBtn"+(i+deletedSoIncrease)).addEventListener("click", function(event){
-                editListItem(this);
-                event.stopPropagation();
-            });
-            //cross button
-            document.getElementById("crossBtn"+(i+deletedSoIncrease)).addEventListener("click", function(event){
-                deleteListItem(this);
-                event.stopPropagation(); // event will not work for parent's click
-            });
-        }else{
-            //for loop till the available list item arrives
-            for(let j=i; i< document.getElementsByClassName("do").length; j++){
-                if(document.getElementById("crossBtn"+(i+deletedSoIncrease))){
-                    break;
-                }else{
-                    deletedSoIncrease++;
-                }
-            }
-            //edit button
-            document.getElementById("editBtn"+(i+deletedSoIncrease)).addEventListener("click", function(event){
-                editListItem(this);
-                event.stopPropagation();
-            });
-            //cross button
-            document.getElementById("crossBtn"+(i+deletedSoIncrease)).addEventListener("click", function(event){
-                deleteListItem(this);
-                event.stopPropagation(); // event will not work for parent's click
-            });
-        }
-        
-    }   
+// Adds data to array
+function addData(){
+    var singleInputData = document.getElementById("inputData").value.trim(); // get value from input
+    if(singleInputData !==''){
+        allInputData.push(singleInputData); // push in array
+        document.getElementById("inputData").value=''; // reset value of input
+        displayData();
+    }
 }
 
+// Creates List Item
+function displayData(){
+    let list = document.getElementById("dataDisplay"); // get list
+    let listItem = document.createElement("li"); // create new list item
+    listItem.textContent = allInputData[allInputData.length-1]; // add content (removed for adding ID and buttons) (readded)
+    listItem.id = allInputData.length; // Give id to li
+    listItem.className = 'do'; // add class name
+    list.appendChild(listItem); // append li to list
+    addButtons(listItem);
+}
 
-let undoData;// global declaration 
+// Creates new buttons as child nodes
+function addButtons(listItem){  
+    let button1 = document.createElement("button"); // create new button
+    button1.innerHTML = 'X'; // button name
+    button1.className = 'crossButton'; // button class
+    let button2 = document.createElement("button"); // create new button
+    button2.innerHTML = 'edit'; //button name
+    button2.className = 'editButton'; //button class
+    listItem.appendChild(button1); // append in list item
+    listItem.appendChild(button2); // append in list item
+    addListeners(listItem.id);
+    
+}
 
+// Adds event listeners to list item and childern
+function addListeners(li_id){
+    let li = document.getElementById(li_id); // get list item
+    li.addEventListener("click", function(){ // add event listener - List Item
+        this.classList.toggle("done");
+    });
+    li.childNodes[1].addEventListener("click", function(event){ // add event listener - Cross Button
+        crossButton = this; // stores button
+        wait3sec(this); 
+        event.stopPropagation(); // propagation for bubbling
+    })
+    li.childNodes[2].addEventListener("click", function(event){ // add event listener - Edit Button
+        event.stopPropagation(); // propagation for bubbling
+        editListItem(this); 
+        
+    }) 
+
+
+}
+
+// Re-adds event listeners
+function addListenersAgain(){
+    let listItems = document.getElementsByClassName("do"); // get all the list items
+    for(let i = 0; i<allInputData.length; i++){ // itterate over all LIs
+        listItems[i].id = (i+1); // assign new id
+        addListeners(listItems[i].id); // add Listener to that id
+    }
+}
+
+// Undo Department
 function undoDept(btn){
     if (btn.value === 'Clear All'){
-        undoData = document.getElementById("dataDisplay").innerHTML; // save previous data
-        document.getElementById("dataDisplay").innerHTML=''; // clear display
-        btn.value="Undo"; // change name of button
+        crossButton.innerHTML = 'X'; // change button name
+        clearTimeout(timeOut); // Clears wait 3 sec (if any);
+        undoData = document.getElementById("dataDisplay").innerHTML; // saves previous data
+        document.getElementById("dataDisplay").innerHTML=''; // clears display
+        btn.value="Undo"; // changes name of button
     }else if(btn.value === 'Undo'){
         document.getElementById("dataDisplay").innerHTML=(undoData); // undo previous data
-        listenerLineThrough();
+        addListenersAgain();
         btn.value="Clear All"; // change name of button
     }
 }
 
+// Edit Department
+function editListItem(event){
+    let content = event.parentElement.textContent.slice(0,-5); // get parent's text
+    let indexForEdit = allInputData.indexOf(content); // get index for array
+    let editedText = prompt("Edit mode: ", content).trim(); // get new edited text
+    if (editedText === ''){ // if there is no text
+        deleteListItem(event); // delete item
+    }else{
+    event.parentElement.classList.remove("done"); // removes line through
+    allInputData[indexForEdit] = editedText; //add edited text to array
+    //update text accordingly 
+    let textToChange = event.parentElement.childNodes[0];
+    textToChange.nodeValue = editedText;
+    }
+}
 
+
+// Waits 3 seconds before removing
+function wait3sec(crsBtn){
+    if (crsBtn.innerHTML === 'X'){
+        crsBtn.innerHTML = "undo";
+        timeOut = setTimeout(deleteListItem, 1000, crsBtn); // time out for 2 sec
+    }
+    else{
+        clearTimeout(timeOut); // clears timeout (Undo)
+        crsBtn.innerHTML = 'X';
+    }
+}
+
+// Removes the list item
 function deleteListItem(event){
     allInputData.splice(event.parentElement.id,1); //removes element from array
     document.getElementById(event.parentElement.id).outerHTML = ""; // removes the html of list item
 }
-
-function editListItem(event){
-    let content = event.parentElement.textContent.slice(0,-5); // get parent's text
-    let indexForEdit = allInputData.indexOf(content); // get index for array
-    let editedText = prompt("Edit mode: ", content); // get new edited text
-    allInputData[indexForEdit] = editedText; //add edited text to array
-    //update text
-    let textToChange = event.parentElement.childNodes[0];
-    textToChange.nodeValue = editedText;
-}
-
